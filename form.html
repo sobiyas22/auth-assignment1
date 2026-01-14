@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login / Register</title>
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background: #f5f6fa;
@@ -16,18 +20,32 @@
             align-items: center;
             justify-content: center;
         }
+
         .card {
             width: 100%;
             max-width: 420px;
             background: #fff;
             border: 1px solid #e4e6eb;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             padding: 24px;
         }
-        h2 { margin: 0 0 8px; }
-        p { margin: 0 0 16px; color: #6b7280; }
-        form { display: flex; flex-direction: column; gap: 12px; }
+
+        h2 {
+            margin: 0 0 8px;
+        }
+
+        p {
+            margin: 0 0 16px;
+            color: #6b7280;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         input {
             width: 100%;
             padding: 12px;
@@ -35,11 +53,13 @@
             border-radius: 8px;
             font-size: 14px;
         }
+
         input:focus {
             outline: none;
             border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
         }
+
         button {
             padding: 12px;
             border: none;
@@ -50,18 +70,24 @@
             cursor: pointer;
             font-size: 14px;
         }
-        button:hover { background: #4338ca; }
+
+        button:hover {
+            background: #4338ca;
+        }
+
         .switch {
             text-align: center;
             margin-top: 8px;
             color: #6b7280;
             font-size: 14px;
         }
+
         .switch a {
             color: #4f46e5;
             text-decoration: none;
             font-weight: 600;
         }
+
         #profile {
             margin-top: 12px;
             padding: 12px;
@@ -69,9 +95,14 @@
             border-radius: 8px;
             background: #f9fafb;
         }
-        #response { margin-top: 12px; font-weight: 600; }
+
+        #response {
+            margin-top: 12px;
+            font-weight: 600;
+        }
     </style>
 </head>
+
 <body>
     <div class="card">
         <div id="loginForm">
@@ -108,8 +139,10 @@
 
         <div id="response"></div>
     </div>
-
-    <!-- keep your existing script here -->
+    <div id="apiKeySection" style="margin-top: 16px;">
+        <button onclick="fetchApiKey()">Show my API key</button>
+        <div id="apiKeyResult"></div>
+    </div>
     <script>
         // Show Register Form
         function showRegister() {
@@ -214,6 +247,48 @@
                 responseDiv.textContent = 'Network error: ' + error.message;
             }
         }
+        async function fetchApiKey() {
+            const token = localStorage.getItem('token');
+            const out = document.getElementById('apiKeyResult');
+
+            if (!token) {
+                out.style.color = '#ef4444';
+                out.textContent = 'You must be logged in to view your API key.';
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:8000/api/auth/apikey', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token   // or 'Bearer ' + token if your middleware expects that
+                    }
+                });
+
+                const text = await res.text();
+                let data = {};
+                try {
+                    data = text ? JSON.parse(text) : {};
+                } catch (e) {
+                    out.style.color = '#ef4444';
+                    out.textContent = 'Server returned invalid response.';
+                    return;
+                }
+
+                if (res.ok) {
+                    out.style.color = '#10b981';
+                    out.textContent = 'Your API key: ' + (data.apikey || '(none)');
+                } else {
+                    out.style.color = '#ef4444';
+                    out.textContent = data.message || 'Error fetching API key';
+                }
+            } catch (err) {
+                out.style.color = '#ef4444';
+                out.textContent = 'Network error: ' + err.message;
+            }
+        }
     </script>
 </body>
+
 </html>
