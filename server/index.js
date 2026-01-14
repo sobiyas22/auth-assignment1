@@ -1,6 +1,7 @@
 import express from 'express';
 import loginRouter from './login.route.js';
 import cors from 'cors';
+import connectDB from './dbConfig.js';
 import dotenv from 'dotenv';
 dotenv.config();
 const app = express();
@@ -24,4 +25,5 @@ app.get('/health',(req,res)=>{
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+    connectDB();
 });
